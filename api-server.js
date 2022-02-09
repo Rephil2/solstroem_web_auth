@@ -13,10 +13,8 @@ const baseUrl = process.env.AUTH0_BASE_URL;
 const issuerBaseUrl = process.env.AUTH0_ISSUER_BASE_URL;
 const audience = process.env.AUTH0_AUDIENCE;
 
-if (!baseUrl || !issuerBaseUrl) {
-  throw new Error('Please make sure that the file .env.local is in place and populated');
-}
-
+// Verify env file is present 
+if (!baseUrl || !issuerBaseUrl) {throw new Error('Please make sure that the file .env.local is in place and populated');}
 if (!audience) {
   console.log('AUTH0_AUDIENCE not set in .env.local. Shutting down API server.');
   process.exit(1);
@@ -26,6 +24,7 @@ app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors({ origin: baseUrl }));
 
+// Validate user 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,
@@ -39,10 +38,9 @@ const checkJwt = jwt({
 });
 
 app.get('/api/shows', checkJwt, (req, res) => {
-  res.send({
-    msg: 'Your access token was successfully validated!'
-  });
+  res.send({msg: 'Your access token was successfully validated!'});
 });
 
+// Start server 
 const server = app.listen(port, () => console.log(`API Server listening on port ${port}`));
 process.on('SIGINT', () => server.close());
