@@ -1,9 +1,8 @@
 import React from 'react';
-import { withPageAuthRequired } from '@auth0/nextjs-auth0';
-
+import { withPageAuthRequired, getSession } from '@auth0/nextjs-auth0'
 import Highlight from '../components/Highlight';
 
-function SSRPage({ data }, {user}) {
+function SSRPage({ data, user}) {
   return (
     <>
       <div className="mb-5" data-testid="ssr">
@@ -23,6 +22,7 @@ function SSRPage({ data }, {user}) {
       <div className="result-block-container" data-testid="ssr-json">
         <div className="result-block">
           <h6 className="muted">User prop</h6>
+          <Highlight>{JSON.stringify(user, null, 2)}</Highlight>
           <Highlight>{JSON.stringify(data, null, 2)}</Highlight>
         </div>
       </div>
@@ -30,23 +30,20 @@ function SSRPage({ data }, {user}) {
   );
 }
 
-//export const getServerSideProps = withPageAuthRequired();
+export const getServerSideProps = withPageAuthRequired({
 
-// This gets called on every request
-export async function getServerSideProps() {
-  withPageAuthRequired();
+  async getServerSideProps(context) {
 
-  
-  // Fetch data from external API
-  const res = await fetch(`http:localhost:3005/users/be_bucket`)
-  const data = await res.json()
+    // Get user data from Auth0
+    const user = getSession(context.req).user
 
+    // Get data from API
+    const res = await fetch(`http:localhost:3005/users/be_bucket`)
+    const data = await res.json()
+    
+    return {props: { data: data, user:user},}
+  }
 
-
-
-
-
-  return { props: { data } }
-}
+});
 
 export default SSRPage
